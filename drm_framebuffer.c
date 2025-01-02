@@ -139,4 +139,28 @@ int main() {
         close(fd);
         return -1;
     }
+    
+    while (1) {
+        for (int y = 0; y < capture_height; y++) {
+            memcpy(dest_buffer + y * dest_stride,
+                   (uint8_t *)mapped_fb + (y + y_offset) * src_stride + x_offset * bytes_per_pixel,
+                   dest_stride);
+        }
+
+        fwrite(dest_buffer, 1, capture_height * dest_stride, gstreamer);
+        fflush(gstreamer);
+        usleep(1000000 / 25);
+    }
+
+    pclose(gstreamer);
+    free(dest_buffer);
+    munmap(mapped_fb, size);
+    drmModeFreeFB(fb);
+    drmModeFreeCrtc(crtc);
+    drmModeFreeResources(resources);
+    close(fd);
+
+    return 0;
+}
+
 
